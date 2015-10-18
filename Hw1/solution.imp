@@ -1,0 +1,261 @@
+;Comp 105 assignment 1
+;Phillip Booth
+;cs login: pbooth01
+
+;
+;Problem 3 solution
+;
+(define sigma (m n)
+	(if (> m n)
+		(print 0)
+		(if (= n m)
+			m
+			(+ n (sigma m (- n 1)))
+		)
+	)
+)
+;;If n = m return m, else add 1 to n and call sigma on m/n-1
+;;Allows n to be reduced to m's value and then 
+;;adds the results of the current sigma call to the previous n (starts at m and ends at n)
+
+;;This check expect is used to see if Sigma works on regular positive input
+(check-expect (sigma 1 3) 6)
+;;This check expect is used to see if Sigma prints 0 when m > n
+(check-expect (sigma 5 3) 0)
+
+;
+;Problem 4 solution
+;
+(define exp (m n)
+	(if (= n 0)
+		1
+		(* m (exp m (- n 1)))
+	)
+)
+;;If n is 0 return a 1
+;;IF not then call the exp function on n - 1
+;;Once n = 0, m is multiplied by 1 and then that  value is returned to the previous function calls so that m^curval * m^(curval-1)
+
+;;This check expect makes sure that 2 is raised to the correct value
+(check-expect (exp 2 3) 8)
+
+(define log (m n)
+	(if (< n m)
+		0
+		(+ 1 (log m (/ n m)))
+	)
+)
+;;If n > m return 0, else call log again on m and n / m
+;;no behavior is defined for what will happen if negative numbers are used for inputs
+
+;;This check makes sure that the function works for two positive values m > 1 and n > 0
+(check-expect (log 3 4) 1)
+
+;
+;Problem 5 solution
+;
+(define choose (n k)
+	(if (< k 0) 
+		(print 0)
+		(if (< n 0) 
+			(print 0)
+			(if (= k 0)
+				1
+				(if (= n k)
+					1
+					(+ (choose(- n 1) k)
+			   		   (choose (- n 1) (- k 1))
+				 	)
+			 	)
+		 	)
+		 )
+	)
+)
+
+;;If either n or k are less than zero print out a 0
+;;Check the two base cases from the text and return 1 if true
+;;Else implement the last operation from the textbook
+
+;;Check to see that the function works on positive input
+(check-expect (choose 3 2) 3)
+
+;;check to make sure the the function prints zero when either n or k is less than zero
+(check-expect (choose -3 2) 0)
+(check-expect (choose 5 -4) 0)
+
+;
+;Problem 6 solution
+;
+(define fib (m)
+	(if (= m 0)
+		0
+		(if (= m 1)
+			1
+			(+ (fib(- m 1)) (fib(- m 2)))
+		) 
+	)
+)
+
+;;if m = 0 return 0 and if n = 1 return 1
+;;if neither is true call fib on m-1 and m-2
+;;Behavior for m values that are less than zero is undefined
+
+;;check to make sure that the correct value is returned when a positive m value is used as input
+(check-expect (fib 10) 55)
+
+;
+;Problem 7 solution
+;
+(define mod (m n) (- m(* n(/ m n))))    ;textbook function
+(define gcd (m n) (if(= n 0) m (gcd n (mod m n)))) ;textbook function
+
+(define is_n_prime (n m)
+	(if (= m 1)
+		1
+		(if (= 0 (mod n m))
+			0
+			(is_n_prime n (- m 1))
+		)
+	)
+)
+;;If m = 1 return 1
+;;Else call mod on n and m and see if it is 0, if so, return 0 meaning its not prime
+;;Function only tries mod on m values that are n/2 and smaller
+
+
+(define prime? (n)
+	(if (<= n 1)
+		0
+		(if (= n 2)
+			1
+			(is_n_prime n (/ n 2))
+		)
+	)
+)
+;;checks to make sure that n is not 1 or 2 and then calls is_n_prime on n and (n/2)
+
+(define find_nth_prime (n m)
+	(if (= 1 n)
+		m
+		(if (prime? (+ m 1))
+			(find_nth_prime (- n 1) (+ m 1))
+			(find_nth_prime n (+ m 1))
+		) 
+	)
+)
+
+;;If n equals 1 return m
+;;else if m + 1 is prime call find_nth_prime on n - 1 and m + 1
+;;if m + 1 is not prime, call find_nth_prime haowever, dont decrement n because m + 1 is not a prime 
+(define nthprime (n)
+
+	(if (<= n 0)
+		(print 0)
+		(if (= 1 n)
+			2
+			(find_nth_prime n 2)
+		)
+	)
+)
+;;If n > 0 print 0
+;;if n is equal to 1 return 2
+;;If neither of these is true calls find_nth_prime on n and 2 (the first prime number)
+
+(define sumprimes (n)
+	(if (= 0 n)
+		0
+		(+ (nthprime n) (sumprimes (- n 1)))
+	)
+)
+;;IF n is 0 return 0
+;;else add the nth prime number to the val of sumprimes n-1
+;;because the base case of sumprimes returns a 0, the fuction ends up returning each prime number andded to the next lowest prime number
+
+(define relprime? (m n)
+	(if (< m 0)
+		(print 0)
+		(if (< n 0)
+			(print 0)
+			(if (= 1 (gcd m n))
+				1
+				0
+			)
+		)
+	)
+)
+;;Checks to make sure that both m and n are greater than zero
+;;If they are then it uses the gcd function from the textbook to check if they're GCD is in fact 1
+
+;;These checks make sure that prime? works for positive input
+(check-expect (prime? 5) 1)
+(check-expect (prime? 10) 0)
+
+;;These checks make sure that nthprime works for positive input
+(check-expect (nthprime 1) 2)
+(check-expect (nthprime 2) 3)
+(check-expect (nthprime 3) 5)
+
+;;These checks make sure that relprime? works for positive input
+(check-expect (relprime? 2 3) 1)
+(check-expect (relprime? 10 5) 0)
+(check-expect (relprime? 7 11) 1)
+
+;;These checks make sure that sumprimes works for positive input
+(check-expect (sumprimes 3) 10)
+(check-expect (sumprimes 1) 2)
+(check-expect (sumprimes 4) 17)
+
+;
+;Problem 8 solution
+;
+
+(define is-all-fours? (n m)
+	(if (= m n)
+		1
+		(if (> m n)
+			0
+			(is-all-fours? n (+ 4 (* m 10)))
+		)
+	)
+)
+;;if m = n return 1
+;;if m > n return 0
+;;else call is-all-fours on n and m (the next valid number that has all 4's in it)
+
+(define given-positive-all-fours? (n)
+	(if ( < n 4)
+		0
+		(if (= 4 n)
+			1
+			(is-all-fours? n 4)
+		)
+	) 
+)
+;;If n < 4 return 0
+;;IF n = 4 return 1
+;;else call is-all-fours on n and 4 
+
+(define all-fours? (n)
+	(if (< n 0)
+		(given-positive-all-fours? (* -1 n))
+		(given-positive-all-fours? n)
+	)
+)
+;;If n is < 0 just make it positive by multipyling it by -1, and call given-positive-all-fours
+;;If n is >= 0 call given-positive-all-fours
+
+;;These checks make sure that given-positive-all-fours works with positive values
+;;behavior when negative inputs are used in undefined
+(check-expect (given-positive-all-fours? 4) 1)
+(check-expect (given-positive-all-fours? 44) 1)
+(check-expect (given-positive-all-fours? 4444444) 1)
+(check-expect (given-positive-all-fours? 9) 0)
+
+
+;;These checks make sure that all-fours works with both positive values and negative values
+(check-expect (all-fours? -44444447) 0)
+(check-expect (all-fours? -4) 1)
+(check-expect (all-fours? 44) 1)
+(check-expect (all-fours? -4444444) 1)
+(check-expect (all-fours? -9) 0)
+(check-expect (all-fours? 44444447) 0)

@@ -1,0 +1,178 @@
+Title         : OpSem Theory
+Subtitle      : COMP105 Fall 2015
+Author        : Phillip Booth
+
+Comment: These parameters govern typesetting of code and formulas
+~Pre        : css-padding-left=1em
+~Math-Inline: input=mathpre
+
+[TITLE]
+
+<!-- MathDefs allows us to define some useful commands for formatting
+     inference rules -->
+
+~ MathDefs
+\newcommand{\state}[1]{\langle #1 \rangle}
+\newcommand{\inference}[2]{\dfrac{#1}{#2}}
+\newcommand{\yields}[0]{\Downarrow}
+~
+
+
+
+
+## Problem 16 {-}
+
+Here are the standard ImpCore inferences rules for `VAR(x)`:
+
+$\inference%
+  {x \in @dom \rho}%
+  {\state{@VAR(x), \xi, \phi, \rho} \yields \state{\rho(x), \xi, \phi, \rho}}$
+
+and
+
+$\inference%
+  {x \notin @dom  \rho \\ x \in @dom \xi}%
+  {\state{@VAR(x), \xi, \phi, \rho} \yields \state{\xi(x), \xi, \phi, \rho}}$
+
+### (a) Awk-like semantics {-}
+
+If Var(x) is encountered
+
+$\inference%
+  {\inference%
+  	{\inference%
+  		{x \notin @dom  \rho \\ x \notin @dom \xi}%
+  		{\state{e, \xi, \phi, \rho} \yields \state{v, \xi', \phi, \rho'}}%
+  	}%
+  	{\state{@SET(x, 0), \xi, \phi, \rho} \yields \state{v, \xi' \\ \{x \mapsto 0\}, \phi, \rho'}}%
+  }%
+  {\state{@VAR(x), \xi, \phi, \rho} \yields \state{\xi'(x), \xi', \phi, \rho'}}$
+
+If Set(x) is encountered
+
+$\inference%
+  	{x \notin @dom  \rho \\ x \notin @dom \xi \\ \state{e, \xi, \phi, \rho} \yields \state{v, \xi', \phi, \rho'}}%
+  	{\state{@SET(x, 0), \xi, \phi, \rho} \yields \state{v, \xi' \\ \{x \mapsto 0\}, \phi, \rho'}}$
+
+### (b) Icon-like semantics {-}
+
+If Var(x) is encountered
+
+$\inference%
+  {\inference%
+  	{\inference%
+  		{x \notin @dom  \rho \\ x \notin @dom \xi}%
+  		{\state{e, \xi, \phi, \rho} \yields \state{v, \xi', \phi, \rho'}}%
+  	}%
+  	{\state{@SET(x, 0), \xi, \phi, \rho} \yields \state{v, \xi', \phi, \rho' \\ \{x \mapsto 0\}}}%
+  }%
+  {\state{@VAR(x), \xi, \phi, \rho} \yields \state{\rho'(x), \xi', \phi, \rho'}}$
+
+If Set(x) is encountered
+
+$\inference%
+  	{x \notin @dom  \rho \\ x \notin @dom \xi \\ \state{e, \xi, \phi, \rho} \yields \state{v, \xi', \phi, \rho'}}%
+  	{\state{@SET(x, 0), \xi, \phi, \rho} \yields \state{v, \xi', \phi, \rho' \\ \{x \mapsto 0\}}}$
+
+### (c) Which do you prefer and why? {-}
+
+I prefer the icon change because it has a more classic programming feel. Variables are restricted to the immediate scope.
+
+## Problem 13 {-}
+
+$\inference%
+	{\inference%
+  		{\inference%
+  			{\inference%
+  				{x \in @dom  \rho \\ \rho(x) = 99}%
+  				{\state{@VAR(x), \xi, \phi, \rho} \yields \state{99, \xi, \phi, \rho}}%
+  			}%
+  			{\state{@SET(x, 3), \xi, \phi, \rho} \yields \state{v, \xi', \phi, \rho' \\ \{x \mapsto v\}}}%
+  		}%
+  		{\state{@VAR(x), \xi', \phi, \rho'} \yields \state{\rho'(x), \xi', \phi, \rho'}}%
+ 	}%
+ 	{\state{(begin(set x 3) x), \xi, \phi, \rho} \yields \state{3, \xi, \phi, \rho}}$
+
+## Problem 14 {-}
+
+##Case 1
+
+$\inference%
+	{\state{@VAR(x), \xi, \phi, \rho} \yields \state{v1, \xi, \phi, \rho}%
+	\\ v1 = 0 \\ \state{@literal(0), \xi, \phi, \rho} \yields \state{v1, \xi, \phi, \rho}}
+ 	{\state{@if(var(x) var(x) @literal(0)), \xi, \phi, \rho} \yields \state{v1, \xi, \phi, \rho}}$
+
+##Case 2
+
+$\inference%
+	{\state{@VAR(x), \xi, \phi, \rho} \yields \state{v1, \xi, \phi, \rho}%
+	\\ v1 not equal to 0 \\ \state{@VAR(x), \xi, \phi, \rho} \yields \state{v1, \xi, \phi, \rho}}
+ 	{\state{@if(var(x) var(x) @literal(0)), \xi, \phi, \rho} \yields \state{v1, \xi, \phi, \rho}}$
+
+In both cases v1 is equivalent to the value of the expression VAR(x), So because v2 is equivalent
+To the expression $\state{@VAR(x), \xi, \phi, \rho} \yields \state{v2, \xi, \phi, \rho}$, v1 = v2
+
+
+
+## Problem 23 {-}
+
+##Formal Assign
+
+By the induction hypothesis we can evaluate $\state{e, \xi, \phi, \rho} \yields \state{v1, \xi', \phi, \rho'}$
+using a stack and the evaluation will pop $\rho$ and push $\rho'$ without making a copy of $\rho$. $\rho$ does
+not appear anywhere else in the rule, so it is safe to pop it and throw it away. $\rho'$ is used only as part of
+the result of the rule. We can conslude that we can safely evaluate Set(x, e) on a stack and the evaluation
+effectively pops $\rho$ which is never used again and pushes $\rho'$. 
+
+##IFFalse
+
+By the induction hypothesis we can evaluate $\state{e1, \xi, \phi, \rho} \yields \state{v1, \xi', \phi, \rho'}$
+using a stack and the evaluation will pop $\rho$ and push $\rho'$ without making a copy of $\rho$. $\rho$ does
+not appear anymwhere else in the rule, so it is safe to pop it and throw it away. 
+
+We can then use the induction hypothesis again to shoe that the evaluation of e3 can pop $\rho'$ and push $\rho''$
+and $\rho'$ is not copied. $\rho'$ Is not used anywhere else in the rule after the evaluation of e3. $\rho''$ is
+used only as part ofthe result of the rule. We can conslude that we can safely evaluate IF(e1, e2, e3) on a stack
+and the evaluation effectively pops $\rho$ which is never used again and pushes $\rho'$.
+
+##While Iterate 
+By the induction hypothesis we can evaluate $\state{e1, \xi, \phi, \rho} \yields \state{v1, \xi', \phi, \rho'}$
+using a stack and the evaluation will pop $\rho$ and push $\rho'$ without making a copy of $\rho$. $\rho$ does
+not appear anymwhere else in the rule, so it is safe to pop it and throw it away. 
+
+We can then use the induction hypothesis again to shoe that the evaluation of e2 can pop $\rho'$ and push $\rho''$
+and $\rho'$ is not copied. $\rho'$ Is not used anywhere else in the rule after the evaluation of e2. Next the while
+expression is evaluated within the $\rho''$ environment, However, the induction rules hold, meaning just 
+like $\rho'$ was poped and $\rho''$ was pushed onto the stack, $\rho''$ is poped and $\rho'''$ is pushed onto the 
+stack and is used as a result of the rule. We can conslude that we can safely evaluate While(e1, e2) on a stack
+and the evaluation effectively pops $\rho$ which is never used again and pushes $\rho'''$.
+
+##While End
+
+By the induction hypothesis we can evaluate $\state{e, \xi, \phi, \rho} \yields \state{v1, \xi', \phi, \rho'}$
+using a stack and the evaluation will pop $\rho$ and push $\rho'$ without making a copy of $\rho$. $\rho$ does
+not appear anywhere else in the rule, so it is safe to pop it and throw it away. $\rho'$ is used only as part of
+the result of the rule. We can conslude that we can safely evaluate While(e1, e2) on a stack and the evaluation
+effectively pops $\rho$ which is never used again and pushes $\rho'$.
+
+##Empty Begin 
+
+By the induction hypothesis we can evaluate $\state{e, \xi, \phi, \rho} \yields \state{v1, \xi', \phi, \rho'}$
+using a stack and the evaluation will not pop $\rho$. $\rho$ is used only as part of
+the result of the rule. We can conslude that we can safely evaluate begin() on a stack and the evaluation does
+not pop $\rho$.
+
+##Begin
+
+By the induction hypothesis we can evaluate $\state{e1, \xi, \phi, \rho} \yields \state{v1, \xi', \phi, \rho'}$
+using a stack and the evaluation will pop $\rho$ and push $\rho'$ without making a copy of $\rho$. $\rho$ does
+not appear anymwhere else in the rule, so it is safe to pop it and throw it away. 
+
+We can then use the induction hypothesis again to shoe that the evaluation of e2 can pop $\rho'$ and push $\rho''$
+and $\rho'$ is not copied. $\rho'$ Is not used anywhere else in the rule after the evaluation of e3. $\rho''$ is
+used only as part ofthe result of the rule. We can conslude that we can safely evaluate Begin(e1, e2) on a stack
+and the evaluation effectively pops $\rho$ which is never used again and pushes $\rho''$. If there happened to be 
+more then two e's in the begin exspresion then the induction hypothesis helps to show that the stack and 
+evaluation effectively pops $\rho$^n-1 which is never used again and pushes $\rho$^n.
+
+

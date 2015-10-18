@@ -1,0 +1,3 @@
+(define f(x) (set x 1))
+
+(define f(x) (set x 0))
